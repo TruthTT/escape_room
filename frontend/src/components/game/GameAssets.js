@@ -30,10 +30,24 @@ export function drawCharacter(ctx, x, y, color, direction, frame, name, isCurren
   ctx.ellipse(0, size * 0.4, size * 0.4, size * 0.15, 0, 0, Math.PI * 2);
   ctx.fill();
   
-  // Body (rounded rectangle)
+  // Body (rounded rectangle - manual for compatibility)
   ctx.fillStyle = color;
+  const bodyX = -size * 0.35;
+  const bodyY = -size * 0.2;
+  const bodyW = size * 0.7;
+  const bodyH = size * 0.6;
+  const bodyR = size * 0.15;
   ctx.beginPath();
-  ctx.roundRect(-size * 0.35, -size * 0.2, size * 0.7, size * 0.6, size * 0.15);
+  ctx.moveTo(bodyX + bodyR, bodyY);
+  ctx.lineTo(bodyX + bodyW - bodyR, bodyY);
+  ctx.quadraticCurveTo(bodyX + bodyW, bodyY, bodyX + bodyW, bodyY + bodyR);
+  ctx.lineTo(bodyX + bodyW, bodyY + bodyH - bodyR);
+  ctx.quadraticCurveTo(bodyX + bodyW, bodyY + bodyH, bodyX + bodyW - bodyR, bodyY + bodyH);
+  ctx.lineTo(bodyX + bodyR, bodyY + bodyH);
+  ctx.quadraticCurveTo(bodyX, bodyY + bodyH, bodyX, bodyY + bodyH - bodyR);
+  ctx.lineTo(bodyX, bodyY + bodyR);
+  ctx.quadraticCurveTo(bodyX, bodyY, bodyX + bodyR, bodyY);
+  ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = darkenColor(color, 30);
   ctx.lineWidth = 2 * scale;
@@ -61,6 +75,8 @@ export function drawCharacter(ctx, x, y, color, direction, frame, name, isCurren
   ctx.fillStyle = '#333';
   ctx.beginPath();
   ctx.arc(-5 * scale + eyeOffsetX * scale, -size * 0.35 + eyeOffsetY * scale, 2.5 * scale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
   ctx.arc(5 * scale + eyeOffsetX * scale, -size * 0.35 + eyeOffsetY * scale, 2.5 * scale, 0, Math.PI * 2);
   ctx.fill();
   
@@ -68,6 +84,8 @@ export function drawCharacter(ctx, x, y, color, direction, frame, name, isCurren
   ctx.fillStyle = '#FFF';
   ctx.beginPath();
   ctx.arc(-4 * scale + eyeOffsetX * scale, -size * 0.37 + eyeOffsetY * scale, 1 * scale, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
   ctx.arc(6 * scale + eyeOffsetX * scale, -size * 0.37 + eyeOffsetY * scale, 1 * scale, 0, Math.PI * 2);
   ctx.fill();
   
