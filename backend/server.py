@@ -213,18 +213,26 @@ async def disconnect(sid):
         room_id = player_sessions[sid]
         if room_id in game_rooms:
             room = game_rooms[room_id]
-            # Find and remove player by sid
+            # Find player by sid
             player_to_remove = None
             for pid, player in room.players.items():
                 if player.get("sid") == sid:
                     player_to_remove = pid
                     break
+            
+            # Only remove player if game hasn't started (lobby only)
+            # During game, just clear the sid to allow reconnection
             if player_to_remove:
-                del room.players[player_to_remove]
-                await sio.emit('player_left', {
-                    "player_id": player_to_remove,
-                    "players": room.players
-                }, room=room_id)
+                if room.status == "lobby":
+                    del room.players[player_to_remove]
+                    await sio.emit('player_left', {
+                        "player_id": player_to_remove,
+                        "players": room.players
+                    }, room=room_id)
+                else:
+                    # Game in progress - mark as disconnected but don't remove
+                    room.players[player_to_remove]["sid"] = None
+                    room.players[player_to_remove]["disconnected"] = True
         del player_sessions[sid]
 
 @sio.event
