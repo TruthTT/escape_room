@@ -51,6 +51,10 @@ class GameRoom:
             "safe": {"solved": False, "combination": self._generate_code(3)},
             "jigsaw": {"solved": False, "pieces": [False] * 9},
             "uv_light": {"solved": False, "revealed": False},
+            "clock": {"solved": False, "target_time": "3:15"},
+            "cipher": {"solved": False, "answer": "BENEATH RUG"},
+            "color_mix": {"solved": False},
+            "slider": {"solved": False},
             "door": {"unlocked": False}
         }
         self.objects_state = {
@@ -61,7 +65,12 @@ class GameRoom:
             "safe": {"open": False, "contains": "key_piece_2"},
             "jigsaw_table": {"complete": False, "contains": "key_piece_3"},
             "uv_lamp": {"picked_up": False},
-            "door": {"unlocked": False}
+            "door": {"unlocked": False},
+            "clock": {"examined": False, "contains": "clock_hint"},
+            "cipher_book": {"examined": False},
+            "lamp_panel": {"examined": False},
+            "slider_box": {"open": False, "contains": "hidden_compartment_key"},
+            "fireplace": {"examined": False, "clue": "When shadows meet at quarter past three, the answer you will see."}
         }
         self._generate_clues()
         self.messages: List[dict] = []
