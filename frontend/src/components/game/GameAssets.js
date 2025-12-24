@@ -115,8 +115,8 @@ export function drawCharacter(ctx, x, y, color, direction, frame, name, isCurren
   const legOffset = Math.sin(frame * 0.8) * 4 * scale;
   ctx.fillStyle = '#4A4A4A';
   ctx.beginPath();
-  ctx.roundRect(-size * 0.2 + legOffset, size * 0.25, size * 0.15, size * 0.2, 3 * scale);
-  ctx.roundRect(size * 0.05 - legOffset, size * 0.25, size * 0.15, size * 0.2, 3 * scale);
+  roundRect(ctx, -size * 0.2 + legOffset, size * 0.25, size * 0.15, size * 0.2, 3 * scale);
+  roundRect(ctx, size * 0.05 - legOffset, size * 0.25, size * 0.15, size * 0.2, 3 * scale);
   ctx.fill();
   
   // Current player indicator (arrow)
@@ -133,7 +133,7 @@ export function drawCharacter(ctx, x, y, color, direction, frame, name, isCurren
   // Name tag
   ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
   ctx.beginPath();
-  ctx.roundRect(-30 * scale, -size * 0.95, 60 * scale, 14 * scale, 4 * scale);
+  roundRect(ctx, -30 * scale, -size * 0.95, 60 * scale, 14 * scale, 4 * scale);
   ctx.fill();
   
   ctx.fillStyle = '#FFF';
@@ -153,7 +153,7 @@ export const ROOM_OBJECTS = {
       // Desk top
       ctx.fillStyle = '#8B4513';
       ctx.beginPath();
-      ctx.roundRect(x, y, w, h * 0.3, 4);
+      roundRect(ctx, x, y, w, h * 0.3, 4);
       ctx.fill();
       
       // Desk front
@@ -166,7 +166,7 @@ export const ROOM_OBJECTS = {
       ctx.strokeStyle = '#654321';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(x + w * 0.3, y + h * 0.4, w * 0.4, h * 0.4, 3);
+      roundRect(ctx, x + w * 0.3, y + h * 0.4, w * 0.4, h * 0.4, 3);
       ctx.fill();
       ctx.stroke();
       
@@ -220,7 +220,7 @@ export const ROOM_OBJECTS = {
       const isOpen = state?.open;
       ctx.fillStyle = isOpen ? '#2E8B57' : '#4A4A4A';
       ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 5);
+      roundRect(ctx, x, y, w, h, 5);
       ctx.fill();
       
       // Border
@@ -272,7 +272,7 @@ export const ROOM_OBJECTS = {
       // Clock body
       ctx.fillStyle = '#5D3A1A';
       ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 5);
+      roundRect(ctx, x, y, w, h, 5);
       ctx.fill();
       
       // Clock face
@@ -346,7 +346,7 @@ export const ROOM_OBJECTS = {
       // Door
       ctx.fillStyle = isUnlocked ? '#228B22' : '#8B4513';
       ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 3);
+      roundRect(ctx, x, y, w, h, 3);
       ctx.fill();
       
       // Door panels
@@ -388,7 +388,7 @@ export const ROOM_OBJECTS = {
       
       ctx.fillStyle = isPressed ? '#32CD32' : '#808080';
       ctx.beginPath();
-      ctx.roundRect(x, y + (isPressed ? 3 : 0), w, h - (isPressed ? 3 : 0), 3);
+      roundRect(ctx, x, y + (isPressed ? 3 : 0), w, h - (isPressed ? 3 : 0), 3);
       ctx.fill();
       
       ctx.strokeStyle = '#505050';
@@ -465,21 +465,21 @@ export const ROOM_OBJECTS = {
       // Rug base
       ctx.fillStyle = '#8B0000';
       ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 10);
+      roundRect(ctx, x, y, w, h, 10);
       ctx.fill();
       
       // Border pattern
       ctx.strokeStyle = '#FFD700';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.roundRect(x + 10, y + 10, w - 20, h - 20, 5);
+      roundRect(ctx, x + 10, y + 10, w - 20, h - 20, 5);
       ctx.stroke();
       
       // Inner pattern
       ctx.strokeStyle = '#DAA520';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.roundRect(x + 20, y + 20, w - 40, h - 40, 3);
+      roundRect(ctx, x + 20, y + 20, w - 40, h - 40, 3);
       ctx.stroke();
       
       // Center medallion
@@ -555,7 +555,7 @@ export const ROOM_OBJECTS = {
       // Table
       ctx.fillStyle = '#8B4513';
       ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 5);
+      roundRect(ctx, x, y, w, h, 5);
       ctx.fill();
       
       // Puzzle area
