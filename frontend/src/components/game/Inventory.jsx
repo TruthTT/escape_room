@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Key, Flashlight, FileText, Puzzle, Combine } from "lucide-react";
-import { Button } from "../components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../components/ui/tooltip";
+import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 const ITEM_ICONS = {
   key_piece_1: Key,
