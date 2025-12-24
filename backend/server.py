@@ -444,6 +444,66 @@ async def solve_puzzle(sid, data):
                 await sio.emit('jigsaw_progress', {
                     "pieces": room.puzzle_states["jigsaw"]["pieces"]
                 }, room=room_id)
+    
+    elif puzzle_id == "clock":
+        target_time = room.puzzle_states["clock"]["target_time"]
+        if answer == target_time:
+            room.puzzle_states["clock"]["solved"] = True
+            await sio.emit('puzzle_solved', {
+                "puzzle_id": puzzle_id,
+                "item_found": None,
+                "inventory": room.inventory,
+                "message": "The clock chimes... a secret compartment opens!"
+            }, room=room_id)
+        else:
+            await sio.emit('puzzle_failed', {
+                "puzzle_id": puzzle_id,
+                "message": "The clock ticks, but nothing happens..."
+            }, to=sid)
+    
+    elif puzzle_id == "cipher":
+        correct_answer = room.puzzle_states["cipher"]["answer"]
+        if answer.upper().strip() == correct_answer:
+            room.puzzle_states["cipher"]["solved"] = True
+            await sio.emit('puzzle_solved', {
+                "puzzle_id": puzzle_id,
+                "item_found": None,
+                "inventory": room.inventory,
+                "message": "The message decoded! Look beneath the rug..."
+            }, room=room_id)
+        else:
+            await sio.emit('puzzle_failed', {
+                "puzzle_id": puzzle_id,
+                "message": "That doesn't seem right. Try again."
+            }, to=sid)
+    
+    elif puzzle_id == "color_mix":
+        # answer is True if correct colors were mixed
+        if answer == True:
+            room.puzzle_states["color_mix"]["solved"] = True
+            await sio.emit('puzzle_solved', {
+                "puzzle_id": puzzle_id,
+                "item_found": None,
+                "inventory": room.inventory,
+                "message": "The darkness reveals a hidden pattern!"
+            }, room=room_id)
+        else:
+            await sio.emit('puzzle_failed', {
+                "puzzle_id": puzzle_id,
+                "message": "That's not the color of shadow..."
+            }, to=sid)
+    
+    elif puzzle_id == "slider":
+        # answer is True if puzzle was solved
+        if answer == True:
+            room.puzzle_states["slider"]["solved"] = True
+            room.objects_state["slider_box"]["open"] = True
+            await sio.emit('puzzle_solved', {
+                "puzzle_id": puzzle_id,
+                "item_found": "hidden_compartment_key",
+                "inventory": room.inventory,
+                "message": "The puzzle box clicks open!"
+            }, room=room_id)
 
 @sio.event
 async def send_message(sid, data):
