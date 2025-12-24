@@ -8,45 +8,45 @@
       "test": "API Root Endpoint",
       "success": true,
       "details": "Status: 200, Message: The Locked Study - Multiplayer Escape Room API",
-      "timestamp": "2025-12-24T10:30:00.657924"
+      "timestamp": "2025-12-24T11:12:54.387946"
     },
     {
       "test": "Create Room",
       "success": true,
-      "details": "Room ID: 1n64fw",
-      "timestamp": "2025-12-24T10:30:00.696162"
+      "details": "Room ID: row13k",
+      "timestamp": "2025-12-24T11:12:54.430279"
     },
     {
       "test": "Get Room",
       "success": true,
       "details": "Status: lobby",
-      "timestamp": "2025-12-24T10:30:00.735122"
+      "timestamp": "2025-12-24T11:12:54.508062"
     },
     {
       "test": "Join Room",
       "success": true,
-      "details": "Player ID: ucxj49e1",
-      "timestamp": "2025-12-24T10:30:00.771105"
+      "details": "Player ID: 6zyzlmbw",
+      "timestamp": "2025-12-24T11:12:54.545848"
     },
     {
       "test": "Join Nonexistent Room",
       "success": true,
       "details": "Correctly returned 404",
-      "timestamp": "2025-12-24T10:30:00.808658"
+      "timestamp": "2025-12-24T11:12:54.582898"
     },
     {
       "test": "Get Nonexistent Room",
       "success": true,
       "details": "Correctly returned 404",
-      "timestamp": "2025-12-24T10:30:00.843568"
+      "timestamp": "2025-12-24T11:12:54.620937"
     },
     {
       "test": "Socket.IO Endpoint",
       "success": true,
       "details": "Socket.IO handshake successful",
-      "timestamp": "2025-12-24T10:30:00.883553"
+      "timestamp": "2025-12-24T11:12:54.659096"
     }
   ],
-  "room_created": "1n64fw",
-  "timestamp": "2025-12-24T10:30:00.884058"
+  "room_created": "row13k",
+  "timestamp": "2025-12-24T11:12:54.659530"
 }
