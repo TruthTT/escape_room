@@ -35,20 +35,28 @@ Build a lightweight, web-based multiplayer escape-style puzzle game called "The 
 2. ✅ 2-4 players per room with real-time sync
 3. ✅ Player avatars with color-coding
 4. ✅ Top-down canvas game rendering
-5. ✅ Click-to-move navigation
-6. ✅ Object interaction (examine, pickup, use)
-7. ✅ Shared inventory system with 6 slots
-8. ✅ Text chat with quick-chat buttons
+5. ✅ **Keyboard controls (WASD/Arrow keys) for player movement**
+6. ✅ **Virtual joystick for mobile/tablet devices**
+7. ✅ Click-to-move fallback navigation
+8. ✅ Object interaction (examine, pickup, use)
+9. ✅ **Proximity-based interaction hints ("Press E to interact")**
+10. ✅ Shared inventory system with 6 slots
+11. ✅ Text chat with quick-chat buttons
 
-### Puzzles
-1. ✅ 4-digit Code Lock (clue in book)
-2. ✅ 3-digit Safe combination (clue in painting)
-3. ✅ 9-piece Jigsaw puzzle
+### Puzzles (8 Total)
+**Original Puzzles:**
+1. ✅ 4-digit Code Lock (clue in book) → Key Piece 1
+2. ✅ 3-digit Safe combination (clue in painting) → Key Piece 2
+3. ✅ 9-piece Jigsaw puzzle → Key Piece 3
 4. ✅ UV Light reveal (hidden note message)
-5. ✅ Master Key combination (3 key pieces → master key)
-6. ✅ Exit Door unlock (win condition)
 
-### Game Objects
+**New Escape Room Puzzles:**
+5. ✅ **Grandfather Clock** - Set time to 3:15 (hint: "shadows meet at quarter past three")
+6. ✅ **Book Cipher** - Decode "BENEATH RUG" using Page-Line-Word format
+7. ✅ **Color Mix/Light Puzzle** - Combine Red+Blue+Yellow to create darkness
+8. ✅ **Sliding Puzzle** - Arrange tiles 1-8 in order to open puzzle box
+
+### Game Objects (17 Total)
 - Bookshelf with Old Book (code lock clue)
 - Painting (safe combination clue)
 - Desk with locked Drawer (code lock puzzle)
@@ -57,13 +65,35 @@ Build a lightweight, web-based multiplayer escape-style puzzle game called "The 
 - UV Lamp (pickable item)
 - Note (hidden UV message)
 - Exit Door (final escape)
+- Chair
+- Rug (decorative)
+- **Grandfather Clock** (clock puzzle)
+- **Cipher Book** (book cipher puzzle)
+- **Light Panel** (color mix puzzle)
+- **Puzzle Box/Slider** (sliding puzzle)
+- **Fireplace** (with animated fire, provides clock hint)
 
 ### UI/UX
 - Dark Academia Noir theme (gold accents on dark background)
 - Playfair Display headings, Manrope body text
 - Glassmorphism effects for panels
 - Responsive design for mobile/tablet
-- Touch-friendly controls
+- Touch-friendly controls with virtual joystick
+- Keyboard shortcuts displayed in UI
+
+## Player Controls
+
+### Desktop
+- **W/↑** - Move up
+- **S/↓** - Move down
+- **A/←** - Move left
+- **D/→** - Move right
+- **E/Space** - Interact with nearby object
+- **Click** - Move to location or interact with object
+
+### Mobile/Tablet
+- **Virtual Joystick** - Touch and drag to move
+- **Tap** - Interact with objects
 
 ## File Structure
 
@@ -82,51 +112,53 @@ Build a lightweight, web-based multiplayer escape-style puzzle game called "The 
 │   └── GamePage.jsx       # Main game
 ├── components/
 │   ├── game/
-│   │   ├── GameCanvas.jsx # Canvas rendering
-│   │   ├── Inventory.jsx  # Item slots
-│   │   └── ChatPanel.jsx  # Team chat
+│   │   ├── GameCanvas.jsx     # Canvas rendering + keyboard controls
+│   │   ├── VirtualJoystick.jsx # Mobile touch joystick
+│   │   ├── Inventory.jsx      # Item slots
+│   │   └── ChatPanel.jsx      # Team chat
 │   ├── puzzles/
-│   │   ├── CodeLockModal.jsx
-│   │   ├── SafeModal.jsx
-│   │   ├── JigsawModal.jsx
-│   │   └── UVLightModal.jsx
+│   │   ├── CodeLockModal.jsx  # 4-digit code
+│   │   ├── SafeModal.jsx      # 3-dial combination
+│   │   ├── JigsawModal.jsx    # 9-piece puzzle
+│   │   ├── UVLightModal.jsx   # UV reveal
+│   │   ├── ClockModal.jsx     # Time-setting puzzle
+│   │   ├── BookCipherModal.jsx # Decode message
+│   │   ├── ColorMixModal.jsx  # Light mixing
+│   │   └── SliderPuzzleModal.jsx # Sliding tiles
 │   └── WinModal.jsx       # Victory screen
 └── components/ui/         # Shadcn components
 ```
 
 ## Next Action Items
 
-### Phase 2 Enhancements
+### Enhancements
 1. Add player sprite animations (walking, idle)
-2. Add sound effects (door creak, key pickup, puzzle solve)
-3. Add more interactive objects (clock, lamp, fireplace)
-4. Add time-based scoring system
-5. Add room persistence (save/resume)
+2. Add sound effects (footsteps, puzzle clicks, door creak)
+3. Add background ambient music
+4. Add time-based scoring/leaderboard
+5. Add room persistence (save/resume game)
+6. Add spectator mode for finished players
 
-### Polish & Quality
-1. Add loading states for network operations
-2. Add connection status indicator in game
-3. Add error boundary for React errors
-4. Add player cursor indicators (show what others are pointing at)
-
-### Additional Puzzles (Future)
+### Additional Puzzles (Ideas)
 1. Mirror reflection puzzle
-2. Musical notes sequence
+2. Musical notes sequence (piano keys)
 3. Bookshelf book order puzzle
-4. Hidden compartment with weight sensor
+4. Weight/balance scale puzzle
 
 ## How to Play
 
 1. **Create or Join**: Host creates a room and shares the link with friends
 2. **Wait in Lobby**: See connected players, host clicks "Start Game"
-3. **Explore**: Click anywhere to move, click objects to interact
-4. **Find Clues**: 
+3. **Move Around**: Use WASD/Arrows on desktop, joystick on mobile
+4. **Explore**: Walk near objects, press E (or tap) to interact
+5. **Find Clues**: 
    - Read the old book for the drawer code
    - Look behind the painting for the safe combination
+   - Check fireplace for clock hint ("quarter past three")
    - Pick up the UV lamp and use it on the note
-5. **Solve Puzzles**: Complete all puzzles to collect 3 key pieces
-6. **Combine Keys**: Click "Combine Keys" when you have all 3 pieces
-7. **Escape**: Use the master key on the exit door to win!
+6. **Solve Puzzles**: Complete all puzzles to collect 3 key pieces
+7. **Combine Keys**: Click "Combine Keys" when you have all 3 pieces
+8. **Escape**: Use the master key on the exit door to win!
 
 ## Deployment Notes
 
