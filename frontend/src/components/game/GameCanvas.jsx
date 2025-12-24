@@ -446,6 +446,11 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
     const sortedPlayers = Object.entries(players)
       .sort((a, b) => a[1].position.y - b[1].position.y);
 
+    // Debug: show player count
+    ctx.fillStyle = '#FFD700';
+    ctx.font = '12px Arial';
+    ctx.fillText(`Players: ${sortedPlayers.length}`, 650, 20);
+
     sortedPlayers.forEach(([id, player], index) => {
       const isCurrentPlayer = id === currentPlayerId;
       const isMoving = Date.now() - lastMoveTime.current < 200;
