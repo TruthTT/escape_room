@@ -239,6 +239,7 @@ async def disconnect(sid):
 async def join_room(sid, data):
     room_id = data.get("room_id")
     player_id = data.get("player_id")
+    player_name = data.get("player_name", "Player")
     
     if room_id not in game_rooms:
         await sio.emit('error', {"message": "Room not found"}, to=sid)
@@ -246,13 +247,21 @@ async def join_room(sid, data):
     
     room = game_rooms[room_id]
     
+    # Check if player exists - if not and game is in progress, allow reconnection
     if player_id not in room.players:
-        await sio.emit('error', {"message": "Player not in room"}, to=sid)
-        return
+        if room.status == "playing":
+            # Player might be reconnecting - try to find by name or add as new
+            # For now, reject - they should rejoin through lobby
+            await sio.emit('error', {"message": "Player not in room. Please rejoin through lobby."}, to=sid)
+            return
+        else:
+            await sio.emit('error', {"message": "Player not in room"}, to=sid)
+            return
     
-    # Store session info
+    # Store session info and reconnect
     player_sessions[sid] = room_id
     room.players[player_id]["sid"] = sid
+    room.players[player_id]["disconnected"] = False
     
     # Join socket room
     await sio.enter_room(sid, room_id)
