@@ -404,6 +404,7 @@ const GamePage = () => {
         players={room.players || {}}
         currentPlayerId={playerId}
         objectsState={room.objects_state || {}}
+        puzzleStates={room.puzzle_states || {}}
         onPlayerMove={handlePlayerMove}
         onObjectClick={handleObjectClick}
       />
