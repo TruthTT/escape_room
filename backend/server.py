@@ -34,8 +34,8 @@ sio = socketio.AsyncServer(
 app = FastAPI(title="The Locked Study - Multiplayer Escape Room")
 api_router = APIRouter(prefix="/api")
 
-# Wrap with Socket.IO
-socket_app = socketio.ASGIApp(sio, app)
+# Wrap with Socket.IO - mount on /api/socket.io path
+socket_app = socketio.ASGIApp(sio, app, socketio_path='/api/socket.io')
 
 # Game State Management
 class GameRoom:
