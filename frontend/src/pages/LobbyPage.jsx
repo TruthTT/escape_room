@@ -42,7 +42,7 @@ const LobbyPage = () => {
     // Connect to Socket.IO
     const newSocket = io(SOCKET_URL, {
       transports: ["websocket", "polling"],
-      path: "/socket.io"
+      path: "/api/socket.io"
     });
 
     newSocket.on("connect", () => {
