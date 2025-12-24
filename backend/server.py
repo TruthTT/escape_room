@@ -78,13 +78,21 @@ class GameRoom:
         self.objects_state["note"]["hidden_message"] = "The key lies in unity - combine the three pieces"
     
     def to_dict(self) -> dict:
+        # Handle puzzle states with different key names
+        puzzle_states_dict = {}
+        for k, v in self.puzzle_states.items():
+            if k == "door":
+                puzzle_states_dict[k] = {"solved": v.get("unlocked", False)}
+            else:
+                puzzle_states_dict[k] = {"solved": v.get("solved", False)}
+        
         return {
             "room_id": self.room_id,
             "host_id": self.host_id,
             "players": self.players,
             "status": self.status,
             "inventory": self.inventory,
-            "puzzle_states": {k: {"solved": v["solved"]} for k, v in self.puzzle_states.items()},
+            "puzzle_states": puzzle_states_dict,
             "objects_state": self.objects_state
         }
 
