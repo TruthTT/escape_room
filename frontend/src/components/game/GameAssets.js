@@ -114,8 +114,12 @@ export function drawCharacter(ctx, x, y, color, direction, frame, name, isCurren
   // Legs (animated)
   const legOffset = Math.sin(frame * 0.8) * 4 * scale;
   ctx.fillStyle = '#4A4A4A';
-  ctx.beginPath();
+  
+  // Left leg
   roundRect(ctx, -size * 0.2 + legOffset, size * 0.25, size * 0.15, size * 0.2, 3 * scale);
+  ctx.fill();
+  
+  // Right leg
   roundRect(ctx, size * 0.05 - legOffset, size * 0.25, size * 0.15, size * 0.2, 3 * scale);
   ctx.fill();
   
