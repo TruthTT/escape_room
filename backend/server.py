@@ -380,6 +380,50 @@ async def use_item(sid, data):
             }, room=room_id)
 
 @sio.event
+async def check_pressure_plates(sid, data):
+    """Check if both pressure plates are pressed for cooperative door opening"""
+    room_id = data.get("room_id")
+    plate_states = data.get("plate_states", {})
+    
+    if room_id not in game_rooms:
+        return
+    
+    room = game_rooms[room_id]
+    
+    # If both plates pressed, unlock door temporarily
+    if plate_states.get("plate1") and plate_states.get("plate2"):
+        room.objects_state["door"]["cooperative_unlock"] = True
+        await sio.emit('cooperative_unlock', {
+            "message": "Both pressure plates activated! The door clicks open!",
+            "door_unlocked": True
+        }, room=room_id)
+    else:
+        room.objects_state["door"]["cooperative_unlock"] = False
+
+@sio.event
+async def cooperative_door_open(sid, data):
+    """Open door when cooperatively unlocked"""
+    room_id = data.get("room_id")
+    player_id = data.get("player_id")
+    
+    if room_id not in game_rooms:
+        return
+    
+    room = game_rooms[room_id]
+    
+    # Check if door can be opened (either master key or cooperative)
+    has_master_key = "master_key" in room.inventory
+    cooperative_unlocked = room.objects_state.get("door", {}).get("cooperative_unlock", False)
+    
+    if has_master_key or cooperative_unlocked:
+        room.objects_state["door"]["unlocked"] = True
+        room.puzzle_states["door"]["unlocked"] = True
+        room.status = "won"
+        await sio.emit('game_won', {
+            "message": "🎉 You've escaped The Locked Study through teamwork!"
+        }, room=room_id)
+
+@sio.event
 async def solve_puzzle(sid, data):
     room_id = data.get("room_id")
     player_id = data.get("player_id")
