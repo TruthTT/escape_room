@@ -342,7 +342,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
           // Old book
           ctx.fillStyle = '#8B0000';
           ctx.beginPath();
-          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, 3);
+          roundRect(ctx, obj.x, obj.y, obj.width, obj.height, 3);
           ctx.fill();
           ctx.strokeStyle = '#5C0000';
           ctx.lineWidth = 1;
@@ -354,7 +354,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
         case 'cipherBook':
           ctx.fillStyle = '#2F4F4F';
           ctx.beginPath();
-          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, 2);
+          roundRect(ctx, obj.x, obj.y, obj.width, obj.height, 2);
           ctx.fill();
           ctx.fillStyle = '#FFD700';
           ctx.font = '6px serif';
@@ -364,7 +364,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
           // UV lamp flashlight
           ctx.fillStyle = '#333';
           ctx.beginPath();
-          ctx.roundRect(obj.x, obj.y, obj.width, obj.height * 0.6, 3);
+          roundRect(ctx, obj.x, obj.y, obj.width, obj.height * 0.6, 3);
           ctx.fill();
           ctx.fillStyle = '#9370DB';
           ctx.beginPath();
@@ -399,7 +399,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
           // Slider puzzle box
           ctx.fillStyle = '#5D3A1A';
           ctx.beginPath();
-          ctx.roundRect(obj.x, obj.y, obj.width, obj.height, 5);
+          roundRect(ctx, obj.x, obj.y, obj.width, obj.height, 5);
           ctx.fill();
           ctx.strokeStyle = '#8B4513';
           ctx.lineWidth = 2;
@@ -433,7 +433,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
         // Label
         ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
         ctx.beginPath();
-        ctx.roundRect(obj.x + obj.width / 2 - 40, obj.y - 25, 80, 18, 4);
+        roundRect(ctx, obj.x + obj.width / 2 - 40, obj.y - 25, 80, 18, 4);
         ctx.fill();
         ctx.fillStyle = '#FFD700';
         ctx.font = 'bold 10px Arial';
