@@ -38,3 +38,7 @@ htmlcov/
 tmp/
 temp/
 *.tmp
+-e 
+# Environment files
+*.env
+*.env.*
