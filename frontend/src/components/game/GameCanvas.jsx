@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 const ROOM_WIDTH = 800;
 const ROOM_HEIGHT = 600;
 const PLAYER_SIZE = 24;
+const PLAYER_SPEED = 4;
 
 // Game objects with their positions and sizes
 const GAME_OBJECTS = {
@@ -20,14 +21,22 @@ const GAME_OBJECTS = {
   door: { x: 350, y: 520, width: 100, height: 60, label: "Exit Door", interactable: true },
   rug: { x: 300, y: 280, width: 200, height: 150, label: "" },
   chair: { x: 450, y: 200, width: 50, height: 50, label: "Chair" },
+  // New puzzle objects
+  clock: { x: 680, y: 50, width: 60, height: 80, label: "Clock", interactable: true },
+  cipher_book: { x: 550, y: 130, width: 35, height: 25, label: "Cipher Book", interactable: true },
+  lamp_panel: { x: 50, y: 280, width: 50, height: 60, label: "Light Panel", interactable: true },
+  slider_box: { x: 680, y: 350, width: 70, height: 70, label: "Puzzle Box", interactable: true },
+  fireplace: { x: 180, y: 30, width: 100, height: 90, label: "Fireplace" },
 };
 
-const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onObjectClick }) => {
+const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onObjectClick, onKeyboardMove }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [canvasSize, setCanvasSize] = useState({ width: ROOM_WIDTH, height: ROOM_HEIGHT });
   const [hoveredObject, setHoveredObject] = useState(null);
+  const [nearbyObject, setNearbyObject] = useState(null);
   const animationFrameRef = useRef(null);
+  const keysPressed = useRef({});
 
   // Handle resize
   useEffect(() => {
@@ -55,6 +64,118 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
 
   // Scale helper
   const scale = canvasSize.width / ROOM_WIDTH;
+
+  // Keyboard controls
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd', 'W', 'A', 'S', 'D', ' ', 'e', 'E'].includes(e.key)) {
+        e.preventDefault();
+        keysPressed.current[e.key.toLowerCase()] = true;
+        
+        // Interact with nearby object on Space or E
+        if ((e.key === ' ' || e.key.toLowerCase() === 'e') && nearbyObject) {
+          onObjectClick(nearbyObject);
+        }
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      keysPressed.current[e.key.toLowerCase()] = false;
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [nearbyObject, onObjectClick]);
+
+  // Movement update loop
+  useEffect(() => {
+    if (!currentPlayerId || !players[currentPlayerId]) return;
+
+    const updateMovement = () => {
+      let dx = 0;
+      let dy = 0;
+
+      if (keysPressed.current['w'] || keysPressed.current['arrowup']) dy -= 1;
+      if (keysPressed.current['s'] || keysPressed.current['arrowdown']) dy += 1;
+      if (keysPressed.current['a'] || keysPressed.current['arrowleft']) dx -= 1;
+      if (keysPressed.current['d'] || keysPressed.current['arrowright']) dx += 1;
+
+      if (dx !== 0 || dy !== 0) {
+        // Normalize diagonal movement
+        const length = Math.sqrt(dx * dx + dy * dy);
+        dx = (dx / length) * PLAYER_SPEED;
+        dy = (dy / length) * PLAYER_SPEED;
+
+        const player = players[currentPlayerId];
+        let newX = player.position.x + dx;
+        let newY = player.position.y + dy;
+
+        // Boundary collision
+        newX = Math.max(PLAYER_SIZE, Math.min(ROOM_WIDTH - PLAYER_SIZE, newX));
+        newY = Math.max(PLAYER_SIZE, Math.min(ROOM_HEIGHT - PLAYER_SIZE, newY));
+
+        // Simple object collision
+        Object.entries(GAME_OBJECTS).forEach(([id, obj]) => {
+          if (id === 'rug') return;
+          const padding = 10;
+          if (newX + PLAYER_SIZE/2 > obj.x - padding && 
+              newX - PLAYER_SIZE/2 < obj.x + obj.width + padding &&
+              newY + PLAYER_SIZE/2 > obj.y - padding && 
+              newY - PLAYER_SIZE/2 < obj.y + obj.height + padding) {
+            // Push back
+            const centerX = obj.x + obj.width / 2;
+            const centerY = obj.y + obj.height / 2;
+            if (Math.abs(player.position.x - centerX) > Math.abs(player.position.y - centerY)) {
+              newX = player.position.x;
+            } else {
+              newY = player.position.y;
+            }
+          }
+        });
+
+        if (newX !== player.position.x || newY !== player.position.y) {
+          onPlayerMove({ x: newX, y: newY });
+        }
+      }
+    };
+
+    const movementInterval = setInterval(updateMovement, 1000 / 60);
+    return () => clearInterval(movementInterval);
+  }, [currentPlayerId, players, onPlayerMove]);
+
+  // Check for nearby interactable objects
+  useEffect(() => {
+    if (!currentPlayerId || !players[currentPlayerId]) return;
+
+    const player = players[currentPlayerId];
+    const interactionDistance = 60;
+    let nearest = null;
+    let nearestDist = Infinity;
+
+    Object.entries(GAME_OBJECTS).forEach(([id, obj]) => {
+      if (!obj.interactable) return;
+      if (id === 'uv_lamp' && objectsState?.uv_lamp?.picked_up) return;
+
+      const objCenterX = obj.x + obj.width / 2;
+      const objCenterY = obj.y + obj.height / 2;
+      const dist = Math.sqrt(
+        Math.pow(player.position.x - objCenterX, 2) +
+        Math.pow(player.position.y - objCenterY, 2)
+      );
+
+      if (dist < interactionDistance && dist < nearestDist) {
+        nearest = id;
+        nearestDist = dist;
+      }
+    });
+
+    setNearbyObject(nearest);
+  }, [players, currentPlayerId, objectsState]);
 
   // Draw the game
   const draw = useCallback(() => {
@@ -112,6 +233,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       if (id === "rug") return;
 
       const isHovered = hoveredObject === id;
+      const isNearby = nearbyObject === id;
       const isInteractable = obj.interactable;
       const state = objectsState?.[id] || {};
 
@@ -124,8 +246,15 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       if (id === "painting") fillColor = "#4a3a2a";
       if (id === "jigsaw_table") fillColor = state.complete ? "#1a3a1a" : "#3d2e1f";
       if (id === "door") fillColor = state.unlocked ? "#1a3a1a" : "#5a3a2a";
-      if (id === "uv_lamp" && state.picked_up) return; // Don't draw if picked up
+      if (id === "uv_lamp" && state.picked_up) return;
       if (id === "note") fillColor = "#F0E6D2";
+      if (id === "clock") fillColor = "#4a3a2a";
+      if (id === "cipher_book") fillColor = "#8B4513";
+      if (id === "lamp_panel") fillColor = "#2a2a2a";
+      if (id === "slider_box") fillColor = "#3d2e1f";
+      if (id === "fireplace") fillColor = "#4a2a1a";
+      if (id === "chair") fillColor = "#3d2e1f";
+      if (id === "book") fillColor = "#8B0000";
 
       ctx.fillStyle = fillColor;
       ctx.fillRect(
@@ -135,9 +264,20 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
         obj.height * scale
       );
 
+      // Fireplace glow effect
+      if (id === "fireplace") {
+        ctx.fillStyle = "#ef4444";
+        ctx.fillRect(
+          (obj.x + 20) * scale,
+          (obj.y + 50) * scale,
+          (obj.width - 40) * scale,
+          (obj.height - 55) * scale
+        );
+      }
+
       // Border
-      ctx.strokeStyle = isHovered && isInteractable ? "#D4AF37" : "#4a4a4a";
-      ctx.lineWidth = isHovered && isInteractable ? 3 * scale : 1 * scale;
+      ctx.strokeStyle = (isHovered || isNearby) && isInteractable ? "#D4AF37" : "#4a4a4a";
+      ctx.lineWidth = (isHovered || isNearby) && isInteractable ? 3 * scale : 1 * scale;
       ctx.strokeRect(
         obj.x * scale,
         obj.y * scale,
@@ -146,7 +286,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       );
 
       // Highlight for interactable objects
-      if (isInteractable && !isHovered) {
+      if (isInteractable && !isHovered && !isNearby) {
         ctx.strokeStyle = "rgba(212, 175, 55, 0.3)";
         ctx.lineWidth = 1 * scale;
         ctx.setLineDash([5 * scale, 5 * scale]);
@@ -160,12 +300,12 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       }
 
       // Label
-      if (obj.label && (isHovered || id === "door")) {
+      if (obj.label && (isHovered || isNearby || id === "door")) {
         ctx.fillStyle = "#e5e5e5";
         ctx.font = `${12 * scale}px Manrope`;
         ctx.textAlign = "center";
         ctx.fillText(
-          obj.label,
+          obj.label + (isNearby ? " [E]" : ""),
           (obj.x + obj.width / 2) * scale,
           (obj.y - 8) * scale
         );
@@ -189,7 +329,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       );
       ctx.fill();
 
-      // Player body
+      // Player body (simple sprite representation)
       ctx.fillStyle = player.color || "#D4AF37";
       ctx.beginPath();
       ctx.arc(
@@ -205,8 +345,21 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       ctx.lineWidth = 2 * scale;
       ctx.stroke();
 
+      // Direction indicator for current player
+      if (isCurrentPlayer) {
+        ctx.fillStyle = "#ffffff";
+        ctx.beginPath();
+        ctx.arc(
+          pos.x * scale,
+          (pos.y - PLAYER_SIZE / 3) * scale,
+          3 * scale,
+          0, Math.PI * 2
+        );
+        ctx.fill();
+      }
+
       // Player initial
-      ctx.fillStyle = isCurrentPlayer ? "#000" : "#000";
+      ctx.fillStyle = "#000";
       ctx.font = `bold ${14 * scale}px Manrope`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -223,11 +376,11 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       ctx.fillText(
         player.name || "Player",
         pos.x * scale,
-        (pos.y - PLAYER_SIZE / 2 - 8) * scale
+        (pos.y - PLAYER_SIZE / 2 - 10) * scale
       );
     });
 
-  }, [canvasSize, players, currentPlayerId, objectsState, hoveredObject, scale]);
+  }, [canvasSize, players, currentPlayerId, objectsState, hoveredObject, nearbyObject, scale]);
 
   // Animation loop
   useEffect(() => {
@@ -266,7 +419,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       }
     }
 
-    // Otherwise, move player
+    // Otherwise, move player (click-to-move fallback)
     onPlayerMove({ x, y });
   }, [scale, onPlayerMove, onObjectClick, objectsState]);
 
@@ -295,6 +448,21 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
     setHoveredObject(foundObject);
   }, [scale, objectsState]);
 
+  // Handle joystick input
+  const handleJoystickMove = useCallback((dx, dy) => {
+    if (!currentPlayerId || !players[currentPlayerId]) return;
+
+    const player = players[currentPlayerId];
+    let newX = player.position.x + dx * PLAYER_SPEED;
+    let newY = player.position.y + dy * PLAYER_SPEED;
+
+    // Boundary collision
+    newX = Math.max(PLAYER_SIZE, Math.min(ROOM_WIDTH - PLAYER_SIZE, newX));
+    newY = Math.max(PLAYER_SIZE, Math.min(ROOM_HEIGHT - PLAYER_SIZE, newY));
+
+    onPlayerMove({ x: newX, y: newY });
+  }, [currentPlayerId, players, onPlayerMove]);
+
   return (
     <motion.div
       ref={containerRef}
@@ -312,7 +480,7 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
         onMouseLeave={() => setHoveredObject(null)}
         className="game-canvas rounded-lg shadow-2xl"
         style={{ 
-          cursor: hoveredObject ? "pointer" : "crosshair",
+          cursor: hoveredObject ? "pointer" : "default",
           maxWidth: "100%",
           maxHeight: "100%"
         }}
@@ -322,10 +490,24 @@ const GameCanvas = ({ players, currentPlayerId, objectsState, onPlayerMove, onOb
       {/* Room info overlay */}
       <div className="absolute top-4 left-4 glass rounded-lg px-4 py-2">
         <h2 className="text-[#D4AF37] font-bold">The Locked Study</h2>
-        <p className="text-[#a3a3a3] text-sm">Click objects to interact</p>
+        <p className="text-[#a3a3a3] text-xs">WASD/Arrows to move • E to interact</p>
       </div>
+
+      {/* Nearby object indicator */}
+      {nearbyObject && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute bottom-32 left-1/2 -translate-x-1/2 glass rounded-lg px-4 py-2"
+        >
+          <p className="text-[#D4AF37] text-sm">
+            Press <kbd className="bg-[#D4AF37] text-black px-1 rounded mx-1">E</kbd> to interact with {GAME_OBJECTS[nearbyObject]?.label}
+          </p>
+        </motion.div>
+      )}
     </motion.div>
   );
 };
 
+export { GAME_OBJECTS };
 export default GameCanvas;
