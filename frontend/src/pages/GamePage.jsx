@@ -3,12 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { io } from "socket.io-client";
 import GameCanvas from "../components/game/GameCanvas";
+import VirtualJoystick from "../components/game/VirtualJoystick";
 import Inventory from "../components/game/Inventory";
 import ChatPanel from "../components/game/ChatPanel";
 import CodeLockModal from "../components/puzzles/CodeLockModal";
 import SafeModal from "../components/puzzles/SafeModal";
 import JigsawModal from "../components/puzzles/JigsawModal";
 import UVLightModal from "../components/puzzles/UVLightModal";
+import ClockModal from "../components/puzzles/ClockModal";
+import BookCipherModal from "../components/puzzles/BookCipherModal";
+import ColorMixModal from "../components/puzzles/ColorMixModal";
+import SliderPuzzleModal from "../components/puzzles/SliderPuzzleModal";
 import WinModal from "../components/WinModal";
 import axios from "axios";
 
@@ -22,12 +27,17 @@ const GamePage = () => {
   const [room, setRoom] = useState(null);
   const [playerId] = useState(localStorage.getItem("playerId"));
   const [isLoading, setIsLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   
   // Puzzle modals
   const [showCodeLock, setShowCodeLock] = useState(false);
   const [showSafe, setShowSafe] = useState(false);
   const [showJigsaw, setShowJigsaw] = useState(false);
   const [showUVLight, setShowUVLight] = useState(false);
+  const [showClock, setShowClock] = useState(false);
+  const [showCipher, setShowCipher] = useState(false);
+  const [showColorMix, setShowColorMix] = useState(false);
+  const [showSlider, setShowSlider] = useState(false);
   const [showWin, setShowWin] = useState(false);
   
   // Current clue/message
@@ -36,6 +46,16 @@ const GamePage = () => {
   const [jigsawPieces, setJigsawPieces] = useState([false, false, false, false, false, false, false, false, false]);
   
   const socketRef = useRef(null);
+
+  // Detect mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Fetch initial room data
   useEffect(() => {
@@ -126,10 +146,19 @@ const GamePage = () => {
           [data.puzzle_id]: { solved: true }
         }
       }));
-      toast.success(`Found ${data.item_found?.replace(/_/g, " ")}!`);
+      if (data.item_found) {
+        toast.success(`Found ${data.item_found?.replace(/_/g, " ")}!`);
+      } else {
+        toast.success("Puzzle solved!");
+      }
+      // Close all puzzle modals
       setShowCodeLock(false);
       setShowSafe(false);
       setShowJigsaw(false);
+      setShowClock(false);
+      setShowCipher(false);
+      setShowColorMix(false);
+      setShowSlider(false);
     });
 
     newSocket.on("puzzle_failed", (data) => {
@@ -192,6 +221,19 @@ const GamePage = () => {
     }
   }, [playerId, roomId]);
 
+  const handleJoystickMove = useCallback((dx, dy) => {
+    if (!room?.players?.[playerId]) return;
+    const player = room.players[playerId];
+    const speed = 4;
+    const newX = Math.max(24, Math.min(776, player.position.x + dx * speed));
+    const newY = Math.max(24, Math.min(576, player.position.y + dy * speed));
+    handlePlayerMove({ x: newX, y: newY });
+  }, [room, playerId, handlePlayerMove]);
+
+  const handleJoystickStop = useCallback(() => {
+    // Player stops
+  }, []);
+
   const handleObjectClick = useCallback((objectId) => {
     if (!socketRef.current || !playerId) return;
 
@@ -216,6 +258,34 @@ const GamePage = () => {
           toast.info("Puzzle already complete");
         } else {
           setShowJigsaw(true);
+        }
+        break;
+      case "clock":
+        if (room?.puzzle_states?.clock?.solved) {
+          toast.info("The clock is already set correctly");
+        } else {
+          setShowClock(true);
+        }
+        break;
+      case "cipher_book":
+        if (room?.puzzle_states?.cipher?.solved) {
+          toast.info("You already decoded the message");
+        } else {
+          setShowCipher(true);
+        }
+        break;
+      case "lamp_panel":
+        if (room?.puzzle_states?.color_mix?.solved) {
+          toast.info("The lights are already mixed correctly");
+        } else {
+          setShowColorMix(true);
+        }
+        break;
+      case "slider_box":
+        if (room?.puzzle_states?.slider?.solved) {
+          toast.info("The puzzle box is already open");
+        } else {
+          setShowSlider(true);
         }
         break;
       case "uv_lamp":
@@ -338,6 +408,14 @@ const GamePage = () => {
         onObjectClick={handleObjectClick}
       />
 
+      {/* Virtual Joystick (Mobile Only) */}
+      {isMobile && (
+        <VirtualJoystick
+          onMove={handleJoystickMove}
+          onStop={handleJoystickStop}
+        />
+      )}
+
       {/* Inventory */}
       <Inventory 
         items={inventory}
@@ -353,7 +431,7 @@ const GamePage = () => {
         onQuickChat={handleQuickChat}
       />
 
-      {/* Puzzle Modals */}
+      {/* Original Puzzle Modals */}
       <CodeLockModal
         isOpen={showCodeLock}
         onClose={() => setShowCodeLock(false)}
@@ -382,6 +460,35 @@ const GamePage = () => {
         onUse={handleUseUVLamp}
         revealed={room.puzzle_states?.uv_light?.revealed}
         message={uvMessage}
+      />
+
+      {/* New Puzzle Modals */}
+      <ClockModal
+        isOpen={showClock}
+        onClose={() => setShowClock(false)}
+        onSubmit={(time) => handleSolvePuzzle("clock", time)}
+        solved={room.puzzle_states?.clock?.solved}
+      />
+
+      <BookCipherModal
+        isOpen={showCipher}
+        onClose={() => setShowCipher(false)}
+        onSubmit={(answer) => handleSolvePuzzle("cipher", answer)}
+        solved={room.puzzle_states?.cipher?.solved}
+      />
+
+      <ColorMixModal
+        isOpen={showColorMix}
+        onClose={() => setShowColorMix(false)}
+        onSubmit={(correct) => handleSolvePuzzle("color_mix", correct)}
+        solved={room.puzzle_states?.color_mix?.solved}
+      />
+
+      <SliderPuzzleModal
+        isOpen={showSlider}
+        onClose={() => setShowSlider(false)}
+        onSubmit={(solved) => handleSolvePuzzle("slider", solved)}
+        solved={room.puzzle_states?.slider?.solved}
       />
 
       {/* Win Modal */}
